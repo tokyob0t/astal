@@ -119,7 +119,6 @@ end
 You can respond to events by declaring event handler functions inside your widget:
 
 ```lua
-
 local function MyButton()
 	return Widget.Button({
 		on_click_release = function(_, event)
@@ -127,11 +126,10 @@ local function MyButton()
 		end,
 	})
 end
-
 ```
 
 :::info
-Keys prefixed with `on` will connect to a `signal` of the widget.
+Keys prefixed with `on_` will connect to a `signal` of the widget.
 Refer to the Gtk and Astal docs to have a full list of them.
 :::
 
@@ -147,7 +145,6 @@ a regular `GObject` and one of its properties.
 Here is an example of a Counter widget that uses a `Variable` as its state:
 
 ```lua
-
 local astal = require("astal")
 local bind = astal.bind
 local Variable = astal.Variable
@@ -250,6 +247,6 @@ You can pass the followings as children:
 - bindings of widgets,
 - bindings of deeply nested arrays of widgets
 
-[falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy) values are not rendered and anything not from this list
+`nil` is the only value that is not rendered and anything not from this list
 will be coerced into a string and rendered as a label
 :::
