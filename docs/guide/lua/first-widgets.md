@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-Start by creating an instance of [Astal.Application](https://aylur.github.io/libastal/astal3/class.Application.html)
+Start by creating an instance of [Astal.Application](https://aylur.github.io/libastal/astal3/class.Application.html).
 
 :::code-group
 
@@ -20,7 +20,7 @@ App:start({
 :::
 
 Then run `lua init.lua` in the terminal, and that's it!
-Now you have an instance running with Lua
+Now you have an instance running with Lua.
 
 ## Root of every shell component: Window
 
@@ -89,7 +89,7 @@ end
 
 :::
 
-Now, you should be able to nest it into another widgets
+Now, you should be able to nest it into another widgets.
 
 ::: code-group
 
@@ -248,5 +248,5 @@ You can pass the followings as children:
 - bindings of deeply nested arrays of widgets
 
 `nil` is the only value that is not rendered and anything not from this list
-will be coerced into a string and rendered as a label
+will be coerced into a string and rendered as a label.
 :::
