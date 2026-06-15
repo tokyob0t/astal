@@ -68,15 +68,65 @@ public class Niri : Object {
         if (_instance != null)
             return _instance;
 
-        var instance = new Niri();
-        instance.keyboard_layouts = new Array<string>();
-        instance.overview = new Overview();
-        instance.stream_socket = IPC.connect();
-        instance.stream_socket.event_stream.connect(instance.handle_events);
-        instance.stream_socket.stream.begin();
+        var i = new Niri();
 
-        _instance = instance;
+        _instance = i;
+
+        i.stream_socket = IPC.connect();
+        i.stream_socket.event_stream.connect(i.handle_events);
+        i.stream_socket.stream.begin();
+
+        try {
+            i.init();
+        } catch (Error err) {
+            critical("Could not initialize: %s", err.message);
+            return null;
+        }
+
         return _instance;
+    }
+
+    private void init() throws Error {
+        keyboard_layouts = new Array<string>();
+        overview = new Overview();
+
+        var outputs = Json.from_string(msg.send("\"Outputs\""))
+            .get_object()
+            .get_object_member("Ok")
+            .get_object_member("Outputs");
+
+        foreach (var name in outputs.get_members()) {
+            var output = new Output.from_json(
+                outputs.get_member(name).get_object()
+            );
+            _outputs.insert(name, output);
+        }
+
+        var workspaces = Json.from_string(msg.send("\"Workspaces\""))
+            .get_object()
+            .get_object_member("Ok")
+            .get_array_member("Workspaces");
+
+        foreach (var element in workspaces.get_elements()) {
+            var workspace = new Workspace.from_json(element.get_object());
+            _workspaces.insert(workspace.id, workspace);
+
+            if (workspace.is_focused)
+                update_focused_workspace(workspace.id);
+        }
+
+        var windows = Json.from_string(msg.send("\"Windows\""))
+            .get_object()
+            .get_object_member("Ok")
+            .get_array_member("Windows");
+
+        foreach (var element in windows.get_elements()) {
+            var window = new Window.from_json(element.get_object());
+            _windows.insert(window.id, window);
+
+            if (window.is_focused)
+                update_focused_window(window.id);
+        }
     }
 
     private static void unknown_workspace(uint64 id) {
