@@ -58,8 +58,8 @@ public class Window : Object {
         workspace?.notify_property("windows");
     }
 
-    public bool focus(int id) {
-        return msg.focus_window(id);
+    public bool focus() {
+        return msg.focus_window((int)id);
     }
 
     public bool set_urgency(bool new_urgency) {
