@@ -48,6 +48,7 @@ sources = [
   'output.vala',
   'structs.vala',
   'overview.vala',
+  'cast.vala',
   'msg.vala',
 ]
 

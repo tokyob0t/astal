@@ -10,6 +10,9 @@ public class Niri : Object {
         new HashTable<uint64?,  Window>    (int64_hash, int64_equal);
     internal HashTable<string?, Output>     _outputs =
         new HashTable<string?,  Output>    (str_hash, str_equal);
+    internal HashTable<uint64?, Cast>  _casts =
+        new HashTable<uint64?,  Cast> (int64_hash, int64_equal);
+
 
     Array<string> keyboard_layouts { get; private set; }
 
@@ -28,6 +31,7 @@ public class Niri : Object {
 
     public List<weak Window> windows { owned get { return _windows.get_values().copy(); } }
     public List<weak Output> outputs { owned get { return _outputs.get_values().copy(); } }
+    public List<weak Cast> casts { owned get { return _casts.get_values().copy(); } }
     public List<weak Workspace> workspaces { owned get {
         var res = _workspaces.get_values().copy();
         res.sort(sort_workspaces);
@@ -55,11 +59,19 @@ public class Niri : Object {
     public signal void window_focus_changed(uint64 window_id);
     /** Window urgency changed */
     public signal void window_urgency_changed(uint64 id, bool urgent);
+
+    // A screencast started, or an existing cast changed.
+    public signal void cast_started(Cast cast);
+    // A screencast stopped.
+    public signal void cast_stopped(uint64 stream_id);
+
+
     /** Workspace urgency changed */
     public signal void workspace_urgency_changed(uint64 id, bool urgent);
     public signal void overview_opened_or_closed(bool is_open);
     public signal void keyboard_layouts_changed(Array<string> keyboard_layouts);
     public signal void keyboard_layout_switched(uint8 idx);
+
 
     private IPC? stream_socket;
     static Niri _instance;
@@ -126,6 +138,16 @@ public class Niri : Object {
 
             if (window.is_focused)
                 update_focused_window(window.id);
+        }
+
+        var casts = Json.from_string(msg.send("\"Casts\""))
+            .get_object()
+            .get_object_member("Ok")
+            .get_array_member("Casts");
+
+        foreach (var element in casts.get_elements()) {
+            var c = new Cast.from_json(element.get_object());
+            _casts.insert(c.stream_id, c);
         }
     }
 
@@ -279,6 +301,43 @@ public class Niri : Object {
                 }
                 workspace_urgency_changed(id, urgent);
                 break;
+            case "CastsChanged":
+                var casts_arr = payload.get_array_member("casts");
+
+                _casts.remove_all();
+                foreach (var element in casts_arr.get_elements()) {
+                    var cast = new Cast.from_json(element.get_object());
+                    _casts.insert(cast.stream_id, cast);
+                }
+                notify_property("casts");
+                break;
+            case "CastStartedOrChanged":
+                var cast_object = payload.get_object_member("cast");
+                var stream_id = cast_object.get_int_member("stream_id");
+
+                var cast = _casts.get(stream_id);
+
+                if (cast != null) {
+                    cast.sync(cast_object);
+                } else {
+                    cast = new Cast.from_json(cast_object);
+                    _casts.insert(stream_id, cast);
+                    cast_started(cast);
+                    notify_property("casts");
+                }
+
+                break;
+            case "CastStopped":
+                var stream_id = payload.get_int_member("stream_id");
+                var cast = _casts.take(stream_id);
+
+                cast.is_active = false;
+                cast.stopped();
+                cast_stopped(stream_id);
+                notify_property("casts");
+
+                break;
+
             case "KeyboardLayoutsChanged":
                 var layouts = payload.get_object_member("keyboard_layouts");
                 var names = layouts.get_array_member("names");
@@ -349,6 +408,19 @@ public class Niri : Object {
         if (id == 0) return null;
         return _workspaces.get(id);
     }
+
+    public unowned Output? get_output(string name) {
+        if (name == "")
+            return null;
+        return _outputs.get(name);
+    }
+
+    public unowned Cast? get_cast(uint64 id) {
+        if (id == 0)
+            return null;
+        return _casts.get(id);
+    }
+
 
     // on_workspaces_changed
     // on_workspace_activated

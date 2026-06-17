@@ -72,6 +72,11 @@ public enum LayoutSwitchTargetTag {
   Index,
 }
 
+public enum CastKind {
+    PipeWire,
+    WlrScreencopy,
+}
+
 public struct WindowLayout {
     /**
       * Optional
