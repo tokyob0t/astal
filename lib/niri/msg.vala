@@ -739,6 +739,10 @@ public class msg : Object {
       return send_act("SetDynamicCastMonitor", serialize_fields({ str_member("output", output) }));
     }
 
+    public static bool stop_cast(int? id) {
+      return send_act("StopCast", serialize_fields({ int_member("session_id", id) }));
+    }
+
     public static bool set_window_height_adjust_fixed(int? id, int fixed_value) {
       return send_act("SetWindowHeight", serialize_fields({ int_member("id", id), obj_member("change", { int_member("AdjustFixed", fixed_value) }) }));
     }
