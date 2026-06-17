@@ -62,6 +62,10 @@ public class Window : Object {
         return msg.focus_window((int)id);
     }
 
+    public bool close() {
+        return msg.close_window((int)id);
+    }
+
     public bool set_urgency(bool new_urgency) {
         if (is_urgent == new_urgency) return true;
         return msg.toggle_window_urgent((int) id);
