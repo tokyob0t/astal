@@ -8,27 +8,29 @@ public class Cast : Object {
     public uint64 stream_id { get; private set; }
     // Session ID of the screencast.
     public uint64 session_id { get; private set; }
-    // Process ID of the screencast consumer, if known.
-    public int? pid { get; private set; }
-    // PipeWire node ID of the screencast stream.
-    public int? pw_node_id { get; private set; }
-
     // Kind of this screencast. Pipewire | WlrScreencopy
     public CastKind kind { get; private set; }
-
-    public bool is_active { get; internal set; }
+    // Target being captured. None | Window | Output
+    public CastTarget target { get; private set; }
+    // Whether this is a Dynamic Cast Target screencast.
     public bool is_dynamic_target { get; private set; }
+    // Whether the cast is currently streaming frames.
+    public bool is_active { get; internal set; }
+    // Process ID of the screencast consumer, if known.
+    public int32? pid { get; private set; }
+    // PipeWire node ID of the screencast stream.
+    public uint32? pw_node_id { get; private set; }
 
-    private string? active_output_name;
-    private int64? active_window_id;
+    private string? target_output_name;
+    private uint64? target_window_id;
 
     // Replaces CastTarget
     public unowned Window? window { get {
-        return Niri.get_default().get_window(active_window_id);
+        return Niri.get_default().get_window(target_window_id);
     }}
 
     public unowned Output? output { get {
-        return Niri.get_default().get_output(active_output_name);
+        return Niri.get_default().get_output(target_output_name);
     }}
 
     internal Cast.from_json(Json.Object object) {
@@ -48,7 +50,7 @@ public class Cast : Object {
         }
 
         if (object.has_member("pw_node_id") && !object.get_null_member("pw_node_id")) {
-            pw_node_id = (int32) object.get_int_member("pw_node_id");
+            pw_node_id = (uint32) object.get_int_member("pw_node_id");
         } else {
             pw_node_id = null;
         }
@@ -63,22 +65,24 @@ public class Cast : Object {
             warning("Unknown CastKind");
         }
 
-        var target = object.get_object_member("target");
+        var t = object.get_object_member("target");
 
-        if (target.has_member("Nothing")) {
-            active_output_name = null;
-            active_window_id = null;
-        } else if (target.has_member("Output")) {
-            active_window_id = null;
+        if (t.has_member("Nothing")) {
+            target = CastTarget.None;
+            target_output_name = null;
+            target_window_id = null;
+        } else if (t.has_member("Output")) {
+            target = CastTarget.Output;
+            target_window_id = null;
 
-            active_output_name = target
-                .get_object_member("Output")
+            target_output_name = t.get_object_member("Output")
                 .get_string_member("name");
 
-        } else if (target.has_member("Window")) {
-            active_output_name = null;
+        } else if (t.has_member("Window")) {
+            target = CastTarget.Window;
+            target_output_name = null;
 
-            active_window_id = target.get_object_member("Window")
+            target_window_id = t.get_object_member("Window")
                   .get_int_member("id");
         }
 

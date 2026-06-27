@@ -77,6 +77,14 @@ public enum CastKind {
     WlrScreencopy,
 }
 
+public enum CastTarget {
+    // "None" is used instead of "Nothing" to match the
+    // conventions used by GObject-based libraries.
+    None,
+    Output,
+    Window,
+}
+
 public struct WindowLayout {
     /**
       * Optional
