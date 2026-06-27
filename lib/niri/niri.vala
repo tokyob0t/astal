@@ -62,6 +62,7 @@ public class Niri : Object {
 
     // A screencast started, or an existing cast changed.
     public signal void cast_started(Cast cast);
+    public signal void casts_changed(List<weak Cast> casts);
     // A screencast stopped.
     public signal void cast_stopped(uint64 stream_id);
 
@@ -309,6 +310,7 @@ public class Niri : Object {
                     var cast = new Cast.from_json(element.get_object());
                     _casts.insert(cast.stream_id, cast);
                 }
+                casts_changed(casts);
                 notify_property("casts");
                 break;
             case "CastStartedOrChanged":
@@ -415,8 +417,7 @@ public class Niri : Object {
     }
 
     public unowned Cast? get_cast(uint64 id) {
-        if (id == 0)
-        if (name == "") return null;
+        if (id == 0) return null;
         return _casts.get(id);
     }
 
