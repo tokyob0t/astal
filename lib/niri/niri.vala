@@ -417,7 +417,7 @@ public class Niri : Object {
 
     public unowned Cast? get_cast(uint64 id) {
         if (id == 0)
-            return null;
+        if (name == "") return null;
         return _casts.get(id);
     }
 
