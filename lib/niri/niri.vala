@@ -410,8 +410,7 @@ public class Niri : Object {
     }
 
     public unowned Output? get_output(string name) {
-        if (name == "")
-            return null;
+        if (name == "") return null;
         return _outputs.get(name);
     }
 
