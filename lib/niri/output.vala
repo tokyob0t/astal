@@ -52,7 +52,6 @@ public class Output : Object {
 
         foreach (var mode in object.get_array_member("modes").get_elements()) 
             modes.append_val(Mode.from_json(mode.get_object()));
-        
 
         var _current_mode = object.get_member("current_mode");
         if (_current_mode.is_null())  current_mode = -1;
@@ -65,10 +64,13 @@ public class Output : Object {
         if (_logical.is_null())  logical = null;
         else logical = LogicalOutput.from_json(_logical.get_object());
     }
+
+    public bool set_dynamic_cast() {
+        return msg.set_dynamic_cast_monitor(name);
+    }
+
     public bool focus() {
        return msg.focus_monitor(name);
     }
-
 }
-
 }
